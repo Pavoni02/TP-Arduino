@@ -1,5 +1,8 @@
 # Estación meteorológica
 
+Videos
+https://drive.google.com/drive/folders/1a60Re3I-AZrzL9qCcXft5rEZTI-9KE0e?usp=sharing
+
 TinkerCAD inicial
 https://www.tinkercad.com/things/b2gM4IPGW7K/editel?sharecode=kH8NKpH_HSYiA50epHQZfdeHs1__0OeczNNd7epc79w
 
