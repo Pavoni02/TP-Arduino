@@ -14,14 +14,15 @@ Se realizan alertas de temperatura (Rojo, amarillo y verde), de humedad (Led 1) 
 
 Opcional: Determina que dia de semana, con otro pulsador de cambia el día de la semana
 
+# Componentes
 
 DHT-11 (Digital)
 HC-05 (Digital)
-Display I2C (Analogico)
+Display I2C (Digital)
 Pulsador
 Led RGB (Digital)
 Sensor de lluvia  (Digital)
-LDR (Fotorresistencia)
+LDR (Fotorresistencia) (Analogico)
 Led 1
 Led 2
 
