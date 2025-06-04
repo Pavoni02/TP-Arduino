@@ -1,0 +1,68 @@
+#include <LiquidCrystal_I2C.h>
+#include <Wire.h>
+
+LiquidCrystal_I2C lcd(0x20,16,2);
+
+int R=7;
+int B=6;
+int G=5;
+int ldr = 0;
+
+bool estadoActual = HIGH;     // Estado actual del pulsador
+bool estadoAnterior = HIGH;  
+
+int contadorFlancos = 0;      
+
+void setup(){
+  lcd.init();
+  lcd.backlight();
+  lcd.setCursor(0, 0);
+  lcd.print("Hola Mundo");
+  lcd.setCursor(0,1);
+  lcd.print("Mensaje 1");
+
+  pinMode(R, OUTPUT);	
+  pinMode(G, OUTPUT);
+  pinMode(B, OUTPUT);
+  pinMode(A3, INPUT);
+  Serial.begin(9600);
+
+  pinMode(13, OUTPUT);
+  pinMode(12, OUTPUT);
+  pinMode(4, INPUT_PULLUP);   
+}
+
+void loop(){
+  // Led RGB
+  digitalWrite(R, HIGH);
+  digitalWrite(G, LOW);
+  digitalWrite(B, HIGH);
+
+  // Fotoresistencia
+  ldr = analogRead(A3);
+  Serial.println(ldr);
+  analogWrite(12, map(ldr, 0, 1023, 0, 255));
+  analogWrite(12,90);
+
+  // Lectura del pulsador con detección de flancos
+  estadoActual = digitalRead(4);
+
+  //Detecta el flanco de high a low
+  if (estadoAnterior == HIGH && estadoActual == LOW) {
+    contadorFlancos++;
+    Serial.print("Flanco detectado: ");
+    Serial.println(contadorFlancos);
+   
+  }
+
+  // Acción según estado actual del pulsador
+  if (estadoActual == HIGH) {
+    digitalWrite(13, LOW);
+  } else {
+    digitalWrite(13, HIGH);
+    delay(5000);
+  }
+
+  estadoAnterior = estadoActual;
+
+}
