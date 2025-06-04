@@ -8,12 +8,12 @@ https://www.tinkercad.com/things/b2gM4IPGW7K/editel?sharecode=kH8NKpH_HSYiA50epH
   
 # Descripción  
   
-Se miden variables climatológicas para determinar temperatura, humedad, lluvia, nivel de luz   
+Se miden variables climatológicas para determinar temperatura, humedad, lluvia y nivel de luz   
 Las variables se actualizan cada un determinado tiempo, con el pulsador se actualizan inmediatamente   
-Las variables se mostraran por un display IC2 y también por Bluetooth  
-Se realizan alertas de temperatura (Rojo, amarillo y verde), de humedad (Led 1) y de nivel de luz (L2)   
+Las mismas se mostraran por un display IC2 y también por Bluetooth  
+Se realizan alertas de temperatura (Led RGB), de humedad (Led 1) y de nivel de luz (Led 2)   
    
-Cometario: Agregar mas detalles cuando se tengan los umbrales de los LEDs definidos  
+Comentario: Agregar mas detalles cuando se tengan los umbrales de los LEDs definidos  
   
 # Componentes  
   
