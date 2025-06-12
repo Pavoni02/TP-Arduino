@@ -9,11 +9,12 @@ https://www.tinkercad.com/things/b2gM4IPGW7K/editel?sharecode=kH8NKpH_HSYiA50epH
 # Descripción  
   
 Se miden variables climatológicas para determinar temperatura, humedad, lluvia y nivel de luz   
-Las variables se actualizan cada un determinado tiempo, con el pulsador se actualizan inmediatamente   
+Las variables se actualizan cada 90 segundos en forma automática, con el pulsador o con escrituras bluetooth se actualizan inmediatamente (mediciones forzadas)   
 Las mismas se mostraran por un display IC2 y también por Bluetooth  
-Se realizan alertas de temperatura (Led RGB), de humedad (Led 1) y de nivel de luz (Led 2)   
+Se realizan alertas de temperatura (Led RGB), de humedad (Led 1) y de nivel de luz (Led 2). Ademàs en el display se muestran las variables de temperatura, humedad y lluvia con sus respectivas alertas.    
    
-Comentario: Agregar mas detalles cuando se tengan los umbrales de los LEDs definidos  
+El umbral del led LDR es desde 0 a 650 y es inverso a la cantidad de luz presente en el ambiente 
+El umbral del led de humedad es desde 58% a 100% y es inverso a la humedad del ambiente
   
 # Componentes  
   
@@ -22,8 +23,7 @@ HC-05 (Digital)
 Display I2C (Digital)  
 Pulsador  
 Led RGB (Digital)  
-Sensor de lluvia  (Digital)  
-Modulo Bluetooth (Digital)  
-LDR (Fotorresistencia) (Analogico)  
-Led 1  
-Led 2  
+Sensor de lluvia  (Digital)   
+LDR (Fotorresistencia) (Analogico)   
+Led LDR (Digital con comportamiento analogico)    
+Led humedad (Digital con comportamiento analogico)    
