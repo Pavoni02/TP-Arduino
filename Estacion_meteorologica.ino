@@ -2,32 +2,46 @@
 #include <LiquidCrystal_I2C.h>
 #include <Wire.h>
 
+//Constantes y definiciones
+
+#define DHTTYPE DHT11
 LiquidCrystal_I2C lcd(0x27,16,2);
 
-const int R=5;
-const int B=6;
-const int G=7;
-int ldr = 0;
-bool pulsador=false;
-#define DHTTYPE DHT11
+const int SENSOR_LLUVIA_PIN=A0;
+const int LDR_PIN=A2;
+
+const int GREEN=2;
+const int BLUE=3;
+const int RED=4;
+const int PULSADOR_PIN=7;
+const int DHTPIN=8;
+const int LED_HUMEDAD=10;
+const int LED_LDR=11;
+
+DHT dht(DHTPIN, DHTTYPE);
+
+//Variables
+
 float humedad = 0;
 float temperatura = 0;
+
+int ldr = 0;
 int sensor_lluvia = 0;
+int contador_flancos = 0;
 
-bool estadoActual = HIGH;     // Estado actual del pulsador
-bool estadoAnterior = HIGH;
-
-int contadorFlancos = 0; 
+bool pulsador=false;
+bool estado_actual = HIGH; // Estado actual del pulsador
+bool estado_anterior = HIGH;
 
 char texto[40];
 char texto_flotante[40];
 char texto_porcentaje[3] = "%";
 
-unsigned long int tiempo_inicial = 0;
-unsigned long int tiempo_inicial_2 = 0;
+unsigned long tiempo_inicial = 0;
+unsigned long tiempo_inicial_2 = 0;
+unsigned long tiempo_inicial_3 = 0;
 
-const int DHTPin=8;
-DHT dht(DHTPin, DHTTYPE);
+//Funciones
 
 void dht11();
 void fotoresistencia();
@@ -39,23 +53,24 @@ void display();
 void alerta_temperatura();
 
 void setup(){
+  pinMode(SENSOR_LLUVIA_PIN, INPUT);
+  pinMode(LDR_PIN, INPUT);
+  pinMode(RED, OUTPUT);	
+  pinMode(GREEN, OUTPUT);
+  pinMode(BLUE, OUTPUT);
+  pinMode(PULSADOR_PIN, INPUT_PULLUP);
+  pinMode(DHTPIN, INPUT);
+  pinMode(LED_HUMEDAD, OUTPUT);
+  pinMode(LED_LDR, OUTPUT);
+
+  Serial.begin(9600);
+  dht.begin();
   lcd.init();
   lcd.backlight();
 
-  pinMode(A0, INPUT);
-  pinMode(R, OUTPUT);	
-  pinMode(G, OUTPUT);
-  pinMode(B, OUTPUT);
-  pinMode(A5, INPUT);
-  Serial.begin(9600);
-  pinMode(13, OUTPUT);
-  pinMode(11, OUTPUT);
-  pinMode(4, INPUT_PULLUP);
-  pinMode(8, INPUT);
-  dht.begin();
-
   tiempo_inicial=millis();
   tiempo_inicial_2=millis();
+  tiempo_inicial_3=millis();
   dht11();
   fotoresistencia();
   medicion_lluvia();
@@ -65,6 +80,7 @@ void setup(){
 
 void loop(){
   if (millis()-tiempo_inicial_2 >= 1000){
+    lcd.scrollDisplayLeft();
     lcd.scrollDisplayLeft();
     tiempo_inicial_2=millis();
   }
@@ -90,53 +106,68 @@ void loop(){
     }
   }
 
-  pulsador = digitalRead(4);
-  estadoActual = digitalRead(4);
+  pulsador = digitalRead(PULSADOR_PIN);
+  estado_actual = digitalRead(PULSADOR_PIN);
 
   //Detecta el flanco de high a low
-  if (estadoAnterior == HIGH && estadoActual == LOW) {
-    contadorFlancos++;
+  if (estado_anterior == HIGH && estado_actual == LOW && millis()-tiempo_inicial_3 >= 800) {
+    tiempo_inicial_3=millis();
+    contador_flancos++;
     Serial.print("Flanco detectado: ");
-    Serial.println(contadorFlancos);
+    Serial.println(contador_flancos);
     dht11();
     fotoresistencia();
     medicion_lluvia();
     display();
     Serial.println("------------------------------");
   }
-  estadoAnterior = estadoActual;
+  estado_anterior = estado_actual;
 }
+
+//Funciones
 
 void dht11(){
   humedad = dht.readHumidity();
   temperatura = dht.readTemperature();
+  //humedad = 65.00;
+  if(humedad < 60.00){
+    digitalWrite(LED_HUMEDAD, LOW);
+  }
+  else{
+    analogWrite(LED_HUMEDAD, map(humedad, 58, 100, 0, 255));
+  }
 }
 
 void fotoresistencia(){
-  ldr = analogRead(A3);
-  analogWrite(11, map(ldr, 0, 1023, 255, 0));
+  ldr = analogRead(LDR_PIN);
+  if(ldr > 600){
+    digitalWrite(LED_LDR, LOW);
+  }
+  else{
+    analogWrite(LED_LDR, map(ldr, 0, 650, 255, 0));
+  }
 }
 
 void medicion_lluvia(){
-  sensor_lluvia = analogRead(A0);  //lectura digital de pin
+  sensor_lluvia = analogRead(SENSOR_LLUVIA_PIN);  //lectura digital de pin
 }
 
 void led_rgb_verde(){
-  digitalWrite(R, LOW);
-  digitalWrite(G, HIGH);
-  digitalWrite(B, LOW);
+  digitalWrite(RED, LOW);
+  digitalWrite(GREEN, HIGH);
+  digitalWrite(BLUE, LOW);
 }
 
 void led_rgb_amarillo(){
-  digitalWrite(R, HIGH);
-  digitalWrite(G, HIGH);
-  digitalWrite(B, LOW);
+  digitalWrite(RED, HIGH);
+  digitalWrite(GREEN, HIGH);
+  digitalWrite(BLUE, LOW);
 }
 
 void led_rgb_rojo(){
-  digitalWrite(R, HIGH);
-  digitalWrite(G, LOW);
-  digitalWrite(B, LOW);
+  digitalWrite(RED, HIGH);
+  digitalWrite(GREEN, LOW);
+  digitalWrite(BLUE, LOW);
 }
 
 void display(){
@@ -155,7 +186,8 @@ void display(){
   Serial.println(texto);
   sprintf(texto, "LDR: %d", ldr);
   Serial.println(texto);
-  if (sensor_lluvia == HIGH) {
+  //Se usa valor 5 o mayor para evitar falsas alarmas por salpicaduras menores
+  if (sensor_lluvia >= 5) {
       Serial.println("Detectada lluvia");
   }
   else{
