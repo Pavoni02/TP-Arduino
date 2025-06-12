@@ -28,6 +28,7 @@ float temperatura = 0;
 int ldr = 0;
 int sensor_lluvia = 0;
 int contador_flancos = 0;
+int limpiar_buffer;
 
 bool pulsador=false;
 bool estado_actual = HIGH; // Estado actual del pulsador
@@ -37,9 +38,10 @@ char texto[40];
 char texto_flotante[40];
 char texto_porcentaje[3] = "%";
 
-unsigned long tiempo_inicial = 0;
-unsigned long tiempo_inicial_2 = 0;
-unsigned long tiempo_inicial_3 = 0;
+unsigned long tiempo_inicial_automatico = 0;
+unsigned long tiempo_inicial_corrimiento_display = 0;
+unsigned long tiempo_inicial_pulsador = 0;
+unsigned long tiempo_inicial_bluetooth = 0;
 
 //Funciones
 
@@ -68,30 +70,36 @@ void setup(){
   lcd.init();
   lcd.backlight();
 
-  tiempo_inicial=millis();
-  tiempo_inicial_2=millis();
-  tiempo_inicial_3=millis();
+  tiempo_inicial_automatico=millis();
+  tiempo_inicial_corrimiento_display=millis();
+  tiempo_inicial_pulsador=millis();
+  tiempo_inicial_bluetooth=millis();
   dht11();
   fotoresistencia();
   medicion_lluvia();
   display();
-  Serial.println("------------------------------");
+  Serial.println("");
+  Serial.println("");
+  Serial.println("");
 }
 
 void loop(){
-  if (millis()-tiempo_inicial_2 >= 1000){
+  if (millis()-tiempo_inicial_corrimiento_display >= 1000){
     lcd.scrollDisplayLeft();
     lcd.scrollDisplayLeft();
-    tiempo_inicial_2=millis();
+    tiempo_inicial_corrimiento_display=millis();
   }
 
-  if (millis()-tiempo_inicial >= 60000){
+  if (millis()-tiempo_inicial_automatico >= 60000){
+    Serial.println("Medicion automatica");
     dht11();
     fotoresistencia();
     medicion_lluvia();
     display();
-    tiempo_inicial=millis();
-    Serial.println("------------------------------");
+    tiempo_inicial_automatico=millis();
+    Serial.println("");
+    Serial.println("");
+    Serial.println("");
   }
   if (temperatura>30 || temperatura<5){
     led_rgb_rojo();
@@ -110,18 +118,38 @@ void loop(){
   estado_actual = digitalRead(PULSADOR_PIN);
 
   //Detecta el flanco de high a low
-  if (estado_anterior == HIGH && estado_actual == LOW && millis()-tiempo_inicial_3 >= 800) {
-    tiempo_inicial_3=millis();
+  if (estado_anterior == HIGH && estado_actual == LOW && millis()-tiempo_inicial_pulsador >= 1000) {
+    tiempo_inicial_pulsador=millis();
+    Serial.println("Flanco detectado");
     contador_flancos++;
-    Serial.print("Flanco detectado: ");
-    Serial.println(contador_flancos);
     dht11();
     fotoresistencia();
     medicion_lluvia();
     display();
-    Serial.println("------------------------------");
+    Serial.println("");
+	  Serial.println("");
+	  Serial.println("");
   }
   estado_anterior = estado_actual;
+
+  //Bluetooth
+  if (Serial.available()>0 && millis()-tiempo_inicial_bluetooth >= 1000){
+    Serial.println("Medicion forzada por bluetooth");
+    while(Serial.available()>0){
+      limpiar_buffer = Serial.read();
+    }
+    tiempo_inicial_bluetooth=millis();
+    dht11();
+    fotoresistencia();
+    medicion_lluvia();
+    display();
+    Serial.println("");
+	  Serial.println("");
+	  Serial.println("");
+  }
+  while(Serial.available()>0 && millis()-tiempo_inicial_bluetooth < 1000){
+      limpiar_buffer = Serial.read();
+    }
 }
 
 //Funciones
@@ -129,6 +157,7 @@ void loop(){
 void dht11(){
   humedad = dht.readHumidity();
   temperatura = dht.readTemperature();
+  temperatura = 35.50;
   //humedad = 65.00;
   if(humedad < 60.00){
     digitalWrite(LED_HUMEDAD, LOW);
@@ -171,6 +200,8 @@ void led_rgb_rojo(){
 }
 
 void display(){
+  Serial.print("Flancos totales: ");
+  Serial.println(contador_flancos);
   lcd.clear();
   lcd.setCursor(0, 0);
   dtostrf(temperatura, 2, 2, texto_flotante);
@@ -193,11 +224,11 @@ void display(){
   else{
     Serial.println("No hay lluvia");
   }
-  tiempo_inicial_2=millis();
+  tiempo_inicial_corrimiento_display=millis();
 }
 
 void alerta_temperatura(){
-  lcd.setCursor(0,1);
+  lcd.setCursor(20,0);
   lcd.print("Temperatura Extrema Detectada");
   Serial.println("Temperatura Extrema Detectada");
 }
