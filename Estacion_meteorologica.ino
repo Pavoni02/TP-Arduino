@@ -198,7 +198,6 @@ void display(){
   Serial.println(texto);
   sprintf(texto, "LDR: %d", ldr);
   Serial.println(texto);
-  //Se usa valor 5 o mayor para evitar falsas alarmas por salpicaduras menores
   tiempo_inicial_corrimiento_display=millis();
   if(humedad < 60.00){
     digitalWrite(LED_HUMEDAD, LOW);
@@ -226,6 +225,7 @@ void display(){
   else{
     display_humedad();
   }
+  //Se usa valor 5 o mayor para evitar falsas alarmas por salpicaduras menores
   if (sensor_lluvia >= 5) {
     Serial.println("Detectada lluvia");
     lcd.setCursor(29,0);
