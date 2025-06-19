@@ -54,6 +54,9 @@ void led_rgb_rojo();
 void display();
 void alerta_temperatura();
 void alerta_humedad();
+void display_temperatura();
+void display_humedad();
+void display_temperatura_alerta();
 
 void setup(){
   pinMode(SENSOR_LLUVIA_PIN, INPUT);
@@ -141,6 +144,7 @@ void dht11(){
   humedad = dht.readHumidity();
   temperatura = dht.readTemperature();
   //temperatura = 35.50;
+  //temperatura = 27.50;
   //humedad = 85.00;
 }
 
@@ -209,24 +213,31 @@ void display(){
   else{
     if(temperatura>25.00 || temperatura<15.00){
       led_rgb_amarillo();
+      display_temperatura_alerta();
     }
     else{
       led_rgb_verde();
+      display_temperatura();
     }
   }
   if (humedad > 80.00){
     alerta_humedad();
   }
+  else{
+    display_humedad();
+  }
   if (sensor_lluvia >= 5) {
-      Serial.println("Detectada lluvia");
-      lcd.setCursor(29,0);
-      lcd.print("Detectada");
-      lcd.setCursor(30,1);
-      lcd.print("Lluvia");
+    Serial.println("Detectada lluvia");
+    lcd.setCursor(29,0);
+    lcd.print("Detectada");
   }
   else{
     Serial.println("No hay lluvia");
+    lcd.setCursor(29,0);
+    lcd.print("No hay ");
   }
+  lcd.setCursor(29,1);
+  lcd.print("Lluvia");
 }
 
 void alerta_temperatura(){
@@ -239,4 +250,22 @@ void alerta_humedad(){
   lcd.setCursor(15,1);
   lcd.print("Hum Extrema");
   Serial.println("Humedad Extrema");
+}
+
+void display_temperatura(){
+  lcd.setCursor(15,0);
+  lcd.print("Temp Normal");
+  Serial.println("Temperatura Normal");
+}
+
+void display_temperatura_alerta(){
+  lcd.setCursor(15,0);
+  lcd.print("Temp Alerta");
+  Serial.println("Temperatura Alerta");
+}
+
+void display_humedad(){
+  lcd.setCursor(15,1);
+  lcd.print("Hum Normal");
+  Serial.println("Humedad Normal");
 }
